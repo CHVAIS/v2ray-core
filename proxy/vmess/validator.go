@@ -1,3 +1,5 @@
+// +build !confonly
+
 package vmess
 
 import (
@@ -5,10 +7,9 @@ import (
 	"sync"
 	"time"
 
-	"v2ray.com/core/common/vio"
-
 	"v2ray.com/core/common"
 	"v2ray.com/core/common/protocol"
+	"v2ray.com/core/common/serial"
 	"v2ray.com/core/common/task"
 )
 
@@ -66,7 +67,7 @@ func (v *TimedUserValidator) generateNewHashes(nowSec protocol.Timestamp, user *
 			genBeginSec = nowSec - cacheDurationSec
 		}
 		for ts := genBeginSec; ts <= genEndSec; ts++ {
-			common.Must2(vio.WriteUint64(idHash, uint64(ts)))
+			common.Must2(serial.WriteUint64(idHash, uint64(ts)))
 			idHash.Sum(hashValue[:0])
 			idHash.Reset()
 
@@ -157,11 +158,11 @@ func (v *TimedUserValidator) Remove(email string) bool {
 		return false
 	}
 	ulen := len(v.users)
-	if idx < ulen {
-		v.users[idx] = v.users[ulen-1]
-		v.users[ulen-1] = nil
-		v.users = v.users[:ulen-1]
-	}
+
+	v.users[idx] = v.users[ulen-1]
+	v.users[ulen-1] = nil
+	v.users = v.users[:ulen-1]
+
 	return true
 }
 
